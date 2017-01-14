@@ -1,0 +1,13 @@
+{
+  "name": "bismuth",
+  "version": "0.0.1",
+  "description": "a seed crystal for clouds",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edobry/bismuth.git"
+  },
+  "dependencies": {
+    "cloudatcost": "^2.0.2"
+  }
+}
