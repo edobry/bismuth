@@ -1,5 +1,7 @@
-const meta = require("./package.json"),
-    CloudAtCost = require("./providers/cloudAtCost");
+const
+    Promise = require("bluebird"),
+    CloudAtCost = require("./providers/cloudAtCost"),
+    meta = require("./package.json");
 
 console.log(`${meta.name} v${meta.version}`);
 console.log(`${meta.description}\n`);
@@ -43,25 +45,27 @@ console.log(`Main provider set as ${mainProvider.name}\n`);
 //first: lets get all currently-running c@c servers.
 
 console.log("Querying active instances...");
-mainProvider.activeInstances((err, { data: servers }) => {
-    console.log(`Active instances: ${servers.map(({ label }) => label).join(', ')}\n`);
+mainProvider.activeInstances()
+    .then(({ data: servers }) =>
+        console.log(`Active instances: ${servers.map(({ label }) => label).join(', ')}\n`))
+    .then(() => {
+        console.log("Querying available resources...");
+        return mainProvider.availableResources()
+            .then(({ data: { total, used } }) => {
+                const available = Object.entries(total)
+                    .map(([totalName, totalValue]) => {
+                        const name = totalName.replace(/_total/, "");
+                        return [name, totalValue - used[`${name}_used`]];
+                    })
+                    .reduce((map, [name, value]) => {
+                        map[name] = value;
+                        return map;
+                    }, {});
 
-    console.log("Querying available resources...");
-    mainProvider.availableResources((err, { data: { total, used } }) => {
-        const available = Object.entries(total)
-            .map(([totalName, totalValue]) => {
-                const name = totalName.replace(/_total/, "");
-                return [name, totalValue - used[`${name}_used`]];
-            })
-            .reduce((map, [name, value]) => {
-                map[name] = value;
-                return map;
-            }, {});
+                console.log("Available resources:");
+                console.log(Object.entries(available)
+                    .map(([name, value]) => `${name}: ${value}`).join('\n'));
 
-        console.log("Available resources:");
-        console.log(Object.entries(available)
-            .map(([name, value]) => `${name}: ${value}`).join('\n'));
-
-        console.log("\nyou're welcome.")
+                console.log("\nyou're welcome.")
+            });
     });
-});
