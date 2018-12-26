@@ -1,5 +1,5 @@
 const
-    { sh, install, restart, writeConfig } = require("../../helpers/util"),
+    { sh, install, restart, writeConfig } = require("./util"),
     sshConfig = require("ssh-config");
 
 const setupFirewall = rulesFile => {

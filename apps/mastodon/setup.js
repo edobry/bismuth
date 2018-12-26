@@ -2,7 +2,7 @@ const
     { sh, install, restart, start, writeConfig, getRoot, switchUser, gitClone, addRepo } = require("../../helpers/util"),
     ruby = require("../../helpers/ruby"),
     postgres = require("../../helpers/postgres"),
-    harden = require("./harden.js");
+    harden = require("../../helpers/harden.js");
 
 const installNode = version => sh`
     curl -sL https://deb.nodesource.com/setup_${version}.x | bash -
