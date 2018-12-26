@@ -1,5 +1,5 @@
 const
-    { sh, gitClone } = require("../helpers/util");
+    { sh, gitClone, addToBashrc } = require("./util");
 
 const ruby = {};
 
@@ -19,8 +19,8 @@ ruby.installRuby = version => sh`
 `;
 
 ruby.install = version => sh`
-    ${installRbEnv}
-    ${installRuby(version)}
+    ${ruby.installRbEnv}
+    ${ruby.installRuby(version)}
 `;
 
 module.exports = ruby;

@@ -10,6 +10,7 @@
   "dependencies": {
     "bluebird": "^3.4.7",
     "cloudatcost": "^2.0.2",
+    "common-tags": "^1.8.0",
     "ssh-config": "^1.1.3"
   }
 }

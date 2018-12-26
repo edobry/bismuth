@@ -10,7 +10,7 @@ console.log("Loading providers...");
 const providers = {
     cloudAtCost: new CloudAtCost()
 };
-console.log(`Available providers: ${Object.keys(providers).join(', ')}`);
+console.log(`Available providers: ${Object.keys(providers).join(", ")}`);
 
 //kind of redundant, but lets, for formalitys sake
 var mainProvider = providers.cloudAtCost;
@@ -47,7 +47,7 @@ console.log(`Main provider set as ${mainProvider.name}\n`);
 console.log("Querying active instances...");
 mainProvider.activeInstances()
     .then(({ data: servers }) =>
-        console.log(`Active instances: ${servers.map(({ label }) => label).join(', ')}\n`))
+        console.log(`Active instances: ${servers.map(({ label }) => label).join(", ")}\n`))
     .then(() => {
         console.log("Querying available resources...");
         return mainProvider.availableResources()
@@ -64,8 +64,8 @@ mainProvider.activeInstances()
 
                 console.log("Available resources:");
                 console.log(Object.entries(available)
-                    .map(([name, value]) => `${name}: ${value}`).join('\n'));
+                    .map(([name, value]) => `${name}: ${value}`).join("\n"));
 
-                console.log("\nyou're welcome.")
+                console.log("\nyou're welcome.");
             });
     });

@@ -1,42 +1,8 @@
+const { source } = require("./tags");
+
 const util = {};
 
-util.stamper = (...transformers) => {
-    const {
-        subprocessors,
-        endprocessors
-    } = transformers.reduce((agg, { onSubstitution, onEndResult }) => {
-        if(onSubstitution)
-            agg.subprocessors.push(onSubstitution);
-        if(onEndResult)
-            agg.endprocessors.push(onEndResult);
-
-        return agg;
-    }, {
-        subprocessors: [],
-        endprocessors: []
-    });
-
-    return (strings, ...subs) => {
-        const result = subs
-            .map((sub, i) => [strings[i + 1], sub])
-            .reduce(
-                (soFar, [nextString, sub]) =>
-                    soFar +
-                    subprocessors.reduce((sub, processor) =>
-                        processor(soFar, sub), sub) +
-                    nextString,
-                strings[0]);
-
-        return endprocessors.reduce((end, processor) =>
-            processor(end), result);
-    };
-};
-
-const sh = util.sh = util.stamper(
-    stripOuterEmptyLines,
-    multilineSubstitutions,
-    undent
-);
+const sh = util.sh = source;
 
 util.wrapSingle = val =>
     !Array.isArray(val) ? [val] : val;
@@ -47,6 +13,14 @@ util.install = (packages, config = {}) => sh`
 
 util.restart = service => sh`
     systemctl restart ${service}
+`;
+
+util.enable = services => sh`
+    systemctl enable ${util.wrapSingle(services).join(" ")}
+`;
+
+util.start = services => sh`
+    systemctl start ${util.wrapSingle(services).join(" ")}
 `;
 
 util.writeConfig = (path, assetName) => sh`
@@ -61,12 +35,30 @@ util.switchUser = user => sh`
     su - ${user}
 `;
 
+util.addGroup = group => sh`
+    sudo groupadd ${group}
+`;
+
+util.addUserToGroup = (group, user) => sh`
+    sudo usermod -aG ${group} ${user}
+`;
+
 util.addToBashrc = line => sh`
     echo '${line}' >> ~/.bashrc
 `;
 
 util.gitClone = (source, target) => sh`
     git clone ${source} ${target}
+`;
+
+util.resizePartition = (device, partition) => sh`
+    growpart ${device} ${partition}
+`;
+
+util.addRepo = (url, keyName, repoName) => sh`
+    curl -sS ${url}/${keyName} | apt-key add -
+    echo "deb ${url} stable main" | tee /etc/apt/sources.list.d/${repoName}.list
+    apt update
 `;
 
 module.exports = util;

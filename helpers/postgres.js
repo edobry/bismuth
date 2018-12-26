@@ -1,5 +1,5 @@
 const
-    { sh, gitClone, restart } = require("../helpers/util");
+    { sh, gitClone, restart } = require("./util");
 
 const postgres = {};
 

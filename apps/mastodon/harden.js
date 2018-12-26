@@ -1,5 +1,5 @@
 const
-    { sh, install, restart, writeConfig } = require("../helpers/util"),
+    { sh, install, restart, writeConfig } = require("../../helpers/util"),
     sshConfig = require("ssh-config");
 
 const setupFirewall = rulesFile => {
@@ -24,7 +24,6 @@ module.exports = sh`
     ${install("fail2ban")}
     ${writeConfig("/etc/fail2ban", "jail.local")}
     ${restart("fail2ban")}
-    ${writeConfig("/etc/fail2ban", "jail.local")}
 
     #firewall
     ${setupFirewall("rules.v4")}
