@@ -1,5 +1,7 @@
 const
-    { sh, install, restart, start, writeConfig, getRoot, switchUser, gitClone, addRepo } = require("../../helpers/util");
+    { sh, install, restart, start, writeConfig, getRoot, switchUser, gitClone, addRepo }
+        = require("../../helpers/util"),
+    docker = require("../../helpers/docker");
 
 const deps = [
     "prometheus",
@@ -7,7 +9,15 @@ const deps = [
     "prometheus-pushgateway",
     "prometheus-alertmanager"];
 
+const volumeName = "prometheus-storage";
+
+const configPath = "/etc/prometheus/prometheus.yml";
+
 console.log(sh`
-    ${addRepo("https://s3-eu-west-1.amazonaws.com/deb.robustperception.io", "41EFC99D.gpg", "prometheus")}
-    ${install(deps)}
+    ${docker.createVolume(volumeName)}
+
+    docker run -p 9090:9090 \
+        --mount type=bind,source=${configPath},target=${configPath} \
+        --mount type=volume,source=$(volumeName),target=/prometheus \
+        prom/prometheus
 `);
