@@ -19,5 +19,7 @@ console.log(sh`
     docker run -p 9090:9090 \
         --mount type=bind,source=${configPath},target=${configPath} \
         --mount type=volume,source=$(volumeName),target=/prometheus \
+        --restart=always
+        --name prometheus
         prom/prometheus
 `);

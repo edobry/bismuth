@@ -11,6 +11,10 @@ util.install = (packages, config = {}) => sh`
     apt install ${config.assumeYes ? "-y " : ""}${util.wrapSingle(packages).join(" ")}
 `;
 
+util.reload = sh`
+    systemctl daemon-reload
+`;
+
 util.restart = service => sh`
     systemctl restart ${service}
 `;
@@ -53,6 +57,10 @@ util.gitClone = (source, target) => sh`
 
 util.resizePartition = (device, partition) => sh`
     growpart ${device} ${partition}
+`;
+
+util.unpack = path => sh`
+    tar xvf ${path}
 `;
 
 util.addRepo = (url, keyName, repoName) => sh`

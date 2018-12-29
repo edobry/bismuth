@@ -8,3 +8,7 @@ scrape_configs:
   - job_name: "self"
     static_configs:
       - targets: ['localhost:9090'] # the address of an application that exposes metrics for prometheus
+  - job_name: "meme.garden"
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['meme.garden:9100'] # the address of an application that exposes metrics for prometheus
