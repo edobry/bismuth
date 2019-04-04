@@ -43,6 +43,11 @@ util.addGroup = group => sh`
     sudo groupadd ${group}
 `;
 
+util.createUser = (name, config = {}) => sh`
+    adduser --gecos "" ${config.noLogin ? "--disabled-login " : ""} ${name}
+`;
+
+
 util.addUserToGroup = (group, user) => sh`
     sudo usermod -aG ${group} ${user}
 `;
@@ -63,9 +68,10 @@ util.unpack = path => sh`
     tar xvf ${path}
 `;
 
-util.addRepo = (url, keyName, repoName) => sh`
-    curl -sS ${url}/${keyName} | apt-key add -
-    echo "deb ${url} stable main" | tee /etc/apt/sources.list.d/${repoName}.list
+util.addRepo = ({ host, repoPath = "", keyName, repoName }) => sh`
+    curl -sS ${host}/${keyName} | apt-key add -
+    DISTRO="$(lsb_release -s -c)"
+    echo "deb ${host}/${repoPath} $DISTRO main" | tee /etc/apt/sources.list.d/${repoName}.list
     apt update
 `;
 

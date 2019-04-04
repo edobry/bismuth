@@ -1,5 +1,5 @@
 const
-    { sh, install, restart, start, writeConfig, getRoot, switchUser, gitClone, addRepo }
+    { sh, install, restart, start, writeConfig, getRoot, switchUser, gitClone }
         = require("../../helpers/util"),
     docker = require("../../helpers/docker");
 

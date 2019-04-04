@@ -1,16 +1,9 @@
 const
-    { sh, install, restart, start, writeConfig, getRoot, switchUser, gitClone, addRepo } = require("../../helpers/util"),
+    { sh, install, restart, start, writeConfig, getRoot, createUser, switchUser, gitClone } = require("../../helpers/util"),
     ruby = require("../../helpers/ruby"),
+    node = require("../../helpers/node"),
     postgres = require("../../helpers/postgres"),
     harden = require("../../helpers/harden.js");
-
-const installNode = version => sh`
-    curl -sL https://deb.nodesource.com/setup_${version}.x | bash -
-`;
-
-const createUser = (name, config = {}) => sh`
-    adduser --gecos "" ${config.noLogin ? "--disabled-login " : ""} ${name}
-`;
 
 const deps = [
     "imagemagick", "ffmpeg", "libpq-dev", "libxml2-dev", "libxslt1-dev", "file",
@@ -18,7 +11,7 @@ const deps = [
     "nodejs", "gcc", "autoconf", "bison", "build-essential", "libssl-dev",
     "libyaml-dev", "libreadline6-dev", "zlib1g-dev", "libncurses5-dev",
     "libffi-dev", "libgdbm5", "libgdbm-dev", "nginx", "redis-server",
-    "redis-tools", "postgresql", "postgresql-contrib", "certbot", "yarn",
+    "redis-tools", "postgresql", "postgresql-contrib", "certbot",
     "libidn11-dev", "libicu-dev", "libjemalloc-dev"];
 
 const mastodonUser = "mastodon";
@@ -26,8 +19,6 @@ const mastoDir = "live";
 const mastoPath = `/home/${mastodonUser}/${mastoDir}`;
 
 const setupMasto = () => {
-
-
     return sh`
         ${switchUser(mastodonUser)}
         ${gitClone("https://github.com/tootsuite/mastodon.git", mastoPath)} && cd ${mastoPath}
@@ -80,8 +71,7 @@ console.log(sh`
 
     ${getRoot}
     ${install("curl", { assumeYes: true })}
-    ${installNode("11")}
-    ${addRepo("https://dl.yarnpkg.com/debian", "pubkey.gpg", "yarn")}
+    ${node.install("11")}
     ${install(deps, { assumeYes: true })}
 
     ${createUser(mastodonUser, { noLogin: true })}

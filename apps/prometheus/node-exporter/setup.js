@@ -1,5 +1,5 @@
 const
-    { sh, install, enable, reload, restart, start, writeConfig, getRoot, switchUser, gitClone, addRepo, unpack }
+    { sh, install, enable, reload, restart, start, writeConfig, getRoot, switchUser, gitClone, unpack }
         = require("../../../helpers/util");
 
 const targetVersion = "0.16.0";

@@ -24,7 +24,11 @@ console.log(sh`
     ${harden}
 
     ${install(prereqs)}
-    ${addRepo("https://download.docker.com/linux/ubuntu", "gpg", "prometheus")}
+    ${addRepo({
+        host: "https://download.docker.com/linux/ubuntu",
+        keyName: "gpg",
+        repoName: "prometheus"
+    })}
     ${install("docker-ce")}
 
     #config perms
