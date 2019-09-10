@@ -1,17 +1,61 @@
 const
     { sh, install, restart, writeConfig } = require("./util"),
+    { configureFirewall, rule, inputRule, outputRule, forwardRule, accept, reject } = require("./iptables"),
     sshConfig = require("ssh-config");
 
-const setupFirewall = rulesFile => {
-    const configPath = "/etc/iptables";
+const firewallRules = configureFirewall([
+    //Allow all loopback (lo0) traffic and drop all traffic to 127/8 that doesn't use lo0
+    inputRule({
+        interface: "lo",
+        target: accept
+    }),
+    inputRule({
+        important: true,
+        interface: "lo",
+        destination: "127.0.0.0/8",
+        target: reject,
+    }),
 
-    return sh`
-        ${install("iptables-persistent", { assumeYes: true })}
-        ${writeConfig(configPath, rulesFile)}
-        #load config
-        iptables-restore < ${configPath}/${rulesFile}
-    `;
-};
+    //Accept all established inbound connections
+    inputRule({
+        state: ["ESTABLISHED", "RELATED"],
+        target: accept
+    }),
+
+    //Allow all outbound traffic - you can modify this to only allow certain traffic
+    outputRule({
+        target: accept
+    }),
+
+    //Allow certain inbound connections from anywhere
+    inputTcpRule({
+        destinationPort: 80,
+        target: accept
+    }),
+    inputTcpRule({
+        destinationPort: 443,
+        target: accept
+    }),
+    inputTcpRule({
+        destinationPort: 9100,
+        target: accept
+    }),
+
+    //Allow SSH connections
+    inputTcpRule({
+        destinationPort: 22,
+        state: "NEW",
+        target: accept
+    }),
+
+    //Allow ping
+    inputRule({
+        protocol: "icmp",
+        match: "icmp",
+        icmpType: 8,
+        target: accept
+    })
+]);
 
 module.exports = sh`
     #Edit /etc/ssh/sshd_config and find PasswordAuthentication. Make sure it’s uncommented and set to no. If you made any changes, restart sshd
@@ -22,7 +66,7 @@ module.exports = sh`
 
     #fail2ban
     ${install("fail2ban")}
-    ${writeConfig("/etc/fail2ban", "jail.local")}
+    ${writeConfig("jail.local", "/etc/fail2ban")}
     ${restart("fail2ban")}
 
     #firewall

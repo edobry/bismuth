@@ -75,4 +75,8 @@ util.addRepo = ({ host, repoPath = "", keyName, repoName }) => sh`
     apt update
 `;
 
+util.makeExecutable = script => sh`
+    chmod +x ${script}
+`;
+
 module.exports = util;
