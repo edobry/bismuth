@@ -10,9 +10,9 @@ const prereqs = [
     "curl",
     "software-properties-common"];
 
-const addRepo = (url, keyName, repoName) => sh`
-    curl -fsSL ${url}/${keyName} | sudo apt-key add -
-    sudo add-apt-repository "deb [arch=amd64] ${url} $(lsb_release -cs) stable"
+const addRepo = ({ host, keyName, repoName }) => sh`
+    curl -fsSL ${host}/${keyName} | sudo apt-key add -
+    sudo add-apt-repository "deb [arch=amd64] ${host}/${repoName} $(lsb_release -cs) stable"
     sudo apt update
 `;
 
@@ -20,14 +20,13 @@ const user = "ubuntu";
 
 const groupName = "docker";
 
-console.log(sh`
+module.exports = sh`
     ${harden}
 
     ${install(prereqs)}
     ${addRepo({
         host: "https://download.docker.com/linux/ubuntu",
         keyName: "gpg",
-        repoName: "prometheus"
     })}
     ${install("docker-ce")}
 
@@ -37,4 +36,4 @@ console.log(sh`
 
     #configure run on boot
     ${enable("docker")}
-`);
+`;
