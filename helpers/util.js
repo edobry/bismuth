@@ -27,8 +27,8 @@ util.start = services => sh`
     systemctl start ${util.wrapSingle(services).join(" ")}
 `;
 
-util.writeConfig = (path, assetName) => sh`
-    #Edit ${path}/${assetName} and put assets/${assetName} inside
+util.writeConfig = (assetName, path) => sh`
+    #Edit ${path ? '${path}/' : ""}${assetName} and put assets/${assetName} inside
 `;
 
 util.getRoot = sh`

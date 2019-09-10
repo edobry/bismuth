@@ -21,8 +21,8 @@ const roomDir = "~/ssb-room-data";
     lookup: possible to multiplex shell and sftp over single ssh?
 */
 
-const createRoom = "./createRoom.sh";
-const room = "./room.sh";
+const createRoom = "createRoom.sh";
+const room = "room.sh";
 const startRoom = "startRoom.cron";
 const startHealer = "startHealer.cron";
 
@@ -35,13 +35,13 @@ console.log(sh`
     chown -R 1000:1000 ${roomDir}
     sudo iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 8007
 
-    #copy createRoom.sh
+    ${writeConfig(createRoom)}
     ${makeExecutable(createRoom)}
-    ${createRoom}
+    ./${createRoom}
 
-    #copy room.sh
+    ${writeConfig(room)}
     ${makeExecutable(room}
-    ${room} check
+    ./${room} check
 
     #set up healing
     docker pull ahdinosaur/healer
@@ -52,7 +52,7 @@ console.log(sh`
 
     #set up cron
 
-    #copy ${startRoom}
+    ${writeConfig(startRoom)}
     ${runHourly(startRoom)}
 
     #copy ${startHealer}

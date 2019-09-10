@@ -25,7 +25,7 @@ console.log(sh`
     sudo cp ${assetName}/${binName} /usr/local/bin
     sudo chown ubuntu:ubuntu /usr/local/bin/${binName}
 
-    ${writeConfig("/etc/systemd/system", `${binName}.service`)}
+    ${writeConfig(`${binName}.service`, "/etc/systemd/system")}
     sudo ${reload}
     sudo ${start(binName)}
     sudo ${enable(binName)}

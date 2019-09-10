@@ -22,7 +22,7 @@ const adminPass = "admin";
 
 console.log(sh`
     sudo mkdir ${configDir}
-    ${writeConfig(configDir, configFile)}
+    ${writeConfig(configFile, configDir)}
 
     ${docker.createVolume(volumeName)}
 
