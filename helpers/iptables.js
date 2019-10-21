@@ -16,10 +16,62 @@ iptables.setup = () => sh`
     ${writeConfig(rulesFile, configPath)}
 `;
 
+const compileKey = (key, name) =>
+    camelToDash(key || name);
+
+const handleValue = val =>
+    typeof val == "string" && val.includes(' ')
+        ? `\"${val}\"`
+        : val;
+
+const compileValue = (optionValue, params) =>
+    [
+        handleValue(optionValue),
+        ...Object.entries(params)
+            .map(handleParam)
+    ].join(' ');
+
+const nameMatcher = (paramName, name) =>
+    paramName == name;
+
+const fromEntries = entries =>
+    [...entries].reduce((obj, [key, val]) => {
+        obj[key] = val;
+        return obj;
+}, {});
+
+const paramTypes = {
+    implies: {
+        match: nameMatcher,
+        handler: (paramKey, paramValue) =>
+            compileOptions(paramValue)
+    }
+};
+
+const handleParam = param =>
+    Object.entries(paramTypes)
+        .filter(([paramTypeKey, { match }]) =>
+            match(paramTypeKey, ...param))
+        .map(([, { handler }]) =>
+            handler(...param));
+
+const option = (keyMapper, valueMapper = compileValue) => (optionConfig = {}) => {
+    const { key, ...params } = optionConfig;
+
+    return (name, value) =>
+        `${keyMapper(key, name)}${valueMapper(value, params)}`;
+};
+
 const
-    boolean = key => (name, value) => key || name,
-    basic = key => (name, value) => `-${(key || name)[0]} ${value}`,
-    extended = key => (name, value) => `--${key || name} ${value}`;
+    boolean = option(compileKey, () => ''),
+    basic = option((key, name) => `-${(key || name)[0]} `),
+    extended = option((key, name) => `--${compileKey(key, name)} `),
+    nested = () => (key, value) =>
+        //prepend the key to each nested val and flatten
+        compileOptions(fromEntries(
+            Object.entries(value)
+                .map(([nestedKey, nestedValue]) =>
+                    [`${key}-${nestedKey}`, nestedValue])));
 
 const camelToDash = name =>
     name.split('').reduce((out, char) => {
@@ -30,52 +82,45 @@ const camelToDash = name =>
     }, "");
 
 const optionSerializers = {
-    interface: {
-        type: basic
-    },
-    target: {
-        type: basic,
+    interface: basic(),
+    target: basic({
         key: 'j'
-    },
-    destination: {
-        type: basic
-    },
-    match: {
-        type: basic
-    },
-    state: {
-        type: extended
-    },
-    protocol: {
-        type: basic
-    },
-    destinationPort: {
-        type: extended,
+    }),
+    destination: basic(),
+    match: basic(),
+    state: extended({
+        implies: {
+            match: "state"
+        }
+    }),
+    protocol: basic(),
+    destinationPort: extended({
         key: "dport"
-    },
-    icmpType: {
-        type: extended
-    },
-    limit: {
-        type: extended
-    },
-    important: {
-        type: boolean,
+    }),
+    icmpType: extended(),
+    limit: extended(),
+    important: extended({
         key: '!'
-    }
+    })
 };
 
-const optionConstrucor = args => {
-    const params = args
-}
+const isObject = val =>
+    typeof val === "object" &&
+    !Array.isArray(val);
+
+const compileOption = ([key, value]) => {
+    //if the option is not defined or nested, treat it as extended
+    const optionHandler = optionSerializers[key] || (
+        isObject(value)
+            ? nested
+            : extended)();
+
+    return optionHandler(key, value);
+};
 
 const compileOptions = options =>
-    Object.entries(options).map(([key, value]) => {
-        const definedOption = optionSerializers[key];
-        return (definedOption
-            ? definedOption.type(definedOption.key)
-            : extended())(key, value)
-    }).join(' ');
+    Object.entries(options)
+        .map(compileOption).join(' ');
 
 iptables.rule = (chain, options) => sh`
     -A ${chain} ${compileOptions(options)}
