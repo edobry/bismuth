@@ -13,7 +13,6 @@ iptables.log = "LOG";
 
 iptables.setup = () => sh`
     ${install("iptables-persistent", { assumeYes: true })}
-    ${writeConfig(rulesFile, configPath)}
 `;
 
 const compileKey = (key, name) =>
@@ -65,6 +64,7 @@ const option = (keyMapper, valueMapper = compileValue) => (optionConfig = {}) =>
 const
     boolean = option(compileKey, () => ''),
     basic = option((key, name) => `-${(key || name)[0]} `),
+    special = option((key, name) => `${key} `),
     extended = option((key, name) => `--${compileKey(key, name)} `),
     nested = () => (key, value) =>
         //prepend the key to each nested val and flatten
@@ -91,7 +91,7 @@ const optionSerializers = {
     }),
     icmpType: extended(),
     limit: extended(),
-    important: extended({
+    important: special({
         key: '!'
     })
 };
