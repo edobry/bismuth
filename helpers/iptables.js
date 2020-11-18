@@ -87,7 +87,11 @@ const optionSerializers = {
         key: "dport"
     }),
     icmpType: extended(),
-    limit: extended(),
+    limit: extended({
+        implies: {
+            match: "limit"
+        }
+    }),
     important: special({
         key: '!'
     })
