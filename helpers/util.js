@@ -28,7 +28,13 @@ util.start = services => sh`
 `;
 
 util.writeConfig = (assetName, path) => sh`
-    #Edit ${path ? '${path}/' : ""}${assetName} and put assets/${assetName} inside
+    #Edit ${path ? `${path}/` : ""}${assetName} and put assets/${assetName} inside
+`;
+
+util.hereWrite = (assetName, path, content) => sh `
+    cat <<EOF | sudo tee ${path}/${assetName}
+    ${content}
+    EOF
 `;
 
 util.getRoot = sh`
