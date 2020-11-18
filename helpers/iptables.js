@@ -1,4 +1,4 @@
-const { sh, makeExecutable, writeConfig, install } = require("./util");
+const { sh, makeExecutable, writeConfig, install, camelToDash } = require("./util");
 
 const configPath = "/etc/iptables";
 
@@ -72,14 +72,6 @@ const
             Object.entries(value)
                 .map(([nestedKey, nestedValue]) =>
                     [`${key}-${nestedKey}`, nestedValue])));
-
-const camelToDash = name =>
-    name.split('').reduce((out, char) => {
-        const lowerChar = char.toLowerCase();
-        const isUpper = char != lowerChar;
-
-        return `${out}${isUpper ? '-' : ""}${lowerChar}`;
-    }, "");
 
 const optionSerializers = {
     interface: basic(),

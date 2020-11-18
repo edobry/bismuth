@@ -85,4 +85,13 @@ util.makeExecutable = script => sh`
     chmod +x ${script}
 `;
 
+util.camelToDash = name =>
+    name.split('').reduce((out, char) => {
+        const lowerChar = char.toLowerCase();
+        const isUpper = char != lowerChar;
+
+        return `${out}${isUpper ? '-' : ""}${lowerChar}`;
+    }, "");
+
+
 module.exports = util;
