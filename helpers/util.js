@@ -93,5 +93,13 @@ util.camelToDash = name =>
         return `${out}${isUpper ? '-' : ""}${lowerChar}`;
     }, "");
 
+util.fromEntries = entries =>
+    [...entries].reduce((obj, [key, val]) => {
+        obj[key] = val;
+        return obj;
+}, {});
+
+
+
 
 module.exports = util;

@@ -1,4 +1,4 @@
-const { sh, makeExecutable, writeConfig, install, camelToDash } = require("./util");
+const { sh, makeExecutable, writeConfig, install, camelToDash, fromEntries } = require("./util");
 
 const configPath = "/etc/iptables";
 
@@ -32,12 +32,6 @@ const compileValue = (optionValue, params) =>
 
 const nameMatcher = (paramName, name) =>
     paramName == name;
-
-const fromEntries = entries =>
-    [...entries].reduce((obj, [key, val]) => {
-        obj[key] = val;
-        return obj;
-}, {});
 
 const paramTypes = {
     implies: {
