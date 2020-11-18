@@ -23,13 +23,6 @@ const handleValue = val =>
         ? `\"${val}\"`
         : val;
 
-const compileValue = (optionValue, params) =>
-    [
-        handleValue(optionValue),
-        ...Object.entries(params)
-            .map(handleParam)
-    ].join(' ');
-
 const nameMatcher = (paramName, name) =>
     paramName == name;
 
@@ -48,18 +41,22 @@ const handleParam = param =>
         .map(([, { handler }]) =>
             handler(...param));
 
-const option = (keyMapper, valueMapper = compileValue) => (optionConfig = {}) => {
+const option = (keyMapper, valueMapper = handleValue) => (optionConfig = {}) => {
     const { key, ...params } = optionConfig;
 
-    return (name, value) =>
-        `${keyMapper(key, name)}${valueMapper(value, params)}`;
+    return (name, value) => [
+        ...Object.entries(params)
+            .map(handleParam),
+        keyMapper(key, name),
+        handleValue(value)
+    ].join(' ');
 };
 
 const
     boolean = option(compileKey, () => ''),
-    basic = option((key, name) => `-${(key || name)[0]} `),
-    special = option((key, name) => `${key} `),
-    extended = option((key, name) => `--${compileKey(key, name)} `),
+    basic = option((key, name) => `-${(key || name)[0]}`),
+    special = option((key, name) => key),
+    extended = option((key, name) => `--${compileKey(key, name)}`),
     nested = () => (key, value) =>
         //prepend the key to each nested val and flatten
         compileOptions(fromEntries(
