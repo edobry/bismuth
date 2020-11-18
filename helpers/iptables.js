@@ -140,16 +140,6 @@ iptables.compile = tables => {
     `).join('\n');
 };
 
-iptables.configureFirewall = tables => {
-    const compiledRules = iptables.compile(tables);
-
-    console.log(compiledRules);
-
-    return sh`
-        ${iptables.reload("")}
-    `;
-};
-
 iptables.reload = rulesFile => sh`
     iptables-restore < ${configPath}/${rulesFile}
 `;
