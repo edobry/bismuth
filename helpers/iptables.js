@@ -41,21 +41,27 @@ const handleParam = param =>
         .map(([, { handler }]) =>
             handler(...param));
 
-const option = (keyMapper, valueMapper = handleValue) => (optionConfig = {}) => {
+const identity = x => x;
+
+const option = (keyMapper, valueMapper = identity) => (optionConfig = {}) => {
     const { key, ...params } = optionConfig;
 
     return (name, value) => [
+        // params go first to allow for implication
         ...Object.entries(params)
             .map(handleParam),
         keyMapper(key, name),
-        handleValue(value)
-    ].join(' ');
+        handleValue(valueMapper(value))
+    ]
+        // filter out empty option values (& other fields)
+        .filter(x => x != "")
+        .join(' ');
 };
 
 const
     boolean = option(compileKey, () => ''),
     basic = option((key, name) => `-${(key || name)[0]}`),
-    special = option((key, name) => key),
+    special = option((key, name) => key, () => ''),
     extended = option((key, name) => `--${compileKey(key, name)}`),
     nested = () => (key, value) =>
         //prepend the key to each nested val and flatten
