@@ -1,9 +1,10 @@
 const
-    { sh, install, restart, writeConfig } = require("./util"),
-    { configureFirewall, rule, inputRule, inputTcpRule, outputRule, forwardRule, accept, reject, log } = require("./iptables"),
+    fs = require("fs"),
+    { getRoot, sh, install, restart, writeConfig, hereWrite } = require("./util"),
+    { compile, setup, reload, rule, inputRule, inputTcpRule, outputRule, forwardRule, accept, reject, log } = require("./iptables"),
     sshConfig = require("ssh-config");
 
-const firewallRules = configureFirewall({
+const firewallRules = compile({
     filter: [
         //Allow all loopback (lo0) traffic and drop all traffic to 127/8 that doesn't use lo0
         inputRule({
@@ -77,20 +78,40 @@ const firewallRules = configureFirewall({
     ]
 });
 
-const setupFirewall = () => {};
+const setupFirewall = (rules, file) => {
+    const configPath = "/etc/iptables";
+
+    return sh`
+        ${setup()}
+
+        ${hereWrite(file, configPath, rules)}
+
+        ${reload(file)}
+    `;
+};
+
+const configureFail2Ban = () => {
+    const jailLocal = fs.readFileSync(`${__dirname}/assets/jail.local`, "UTF-8");
+
+    return sh`
+        #fail2ban
+        ${install("fail2ban", { assumeYes: true })}
+        ${hereWrite("jail.local", "/etc/fail2ban", jailLocal)}
+        ${restart("fail2ban")}
+    `;
+}
 
 module.exports = sh`
+    ${getRoot}
+
     #Edit /etc/ssh/sshd_config and find PasswordAuthentication. Make sure it’s uncommented and set to no. If you made any changes, restart sshd
     ${restart("ssh")}
 
     #update packages
     apt update && apt upgrade -y
 
-    #fail2ban
-    ${install("fail2ban")}
-    ${writeConfig("jail.local", "/etc/fail2ban")}
-    ${restart("fail2ban")}
+    ${configureFail2Ban()}
 
     #firewall
-    ${setupFirewall("rules.v4")}
+    ${setupFirewall(firewallRules, "rules.v4")}
 `;

@@ -148,7 +148,7 @@ iptables.compile = tables => {
         ${rules.join('\n')}
 
         COMMIT
-    `);
+    `).join('\n');
 };
 
 iptables.configureFirewall = tables => {
