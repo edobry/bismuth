@@ -39,13 +39,15 @@ const setupMasto = () => {
 };
 
 const setupNginx = (mastoPath, domain) => {
-    const mastoConfigPath  = "/etc/nginx/sites-available/mastodon";
+    const nginxRoot="/etc/nginx";
+    const mastoConfigPath = `${nginxRoot}/sites-available/mastodon`;
 
     return sh`
         cp ${mastoPath}/dist/nginx.conf ${mastoConfigPath}
-        ln -s ${mastoConfigPath} /etc/nginx/sites-enabled/mastodon
+        ln -s ${mastoConfigPath} ${nginxRoot}/sites-enabled/mastodon
 
-        #edit /etc/nginx/sites-available/mastodon to replace example.com with ${domain}
+        #edit ${mastoConfigPath} to replace example.com with ${domain}
+        sed -i 's/example\.com/${domain}/g' ${mastoConfigPath}
 
         ${restart("nginx")}
 
