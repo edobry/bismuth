@@ -104,14 +104,17 @@ const configureFail2Ban = () => {
 module.exports = sh`
     ${getRoot}
 
-    #Edit /etc/ssh/sshd_config and find PasswordAuthentication. Make sure it’s uncommented and set to no. If you made any changes, restart sshd
+    # Edit /etc/ssh/sshd_config and find PasswordAuthentication. Make sure it’s uncommented and set to no. If you made any changes, restart sshd
     ${restart("ssh")}
 
-    #update packages
+    # update packages
     apt update && apt upgrade -y
 
     ${configureFail2Ban()}
 
-    #firewall
+    # firewall
     ${setupFirewall(firewallRules, "rules.v4")}
+
+    # release root
+    exit
 `;
