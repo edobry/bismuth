@@ -15,7 +15,7 @@ ruby.installRbEnv = sh`
 ruby.installRuby = version => sh`
     RUBY_CONFIGURE_OPTS=--with-jemalloc rbenv install ${version}
     rbenv global ${version}
-    gem install bundler --no-ri --no-rdoc
+    gem install bundler -N
 `;
 
 ruby.install = version => sh`
