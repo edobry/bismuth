@@ -80,6 +80,7 @@ console.log(sh`
     ${switchUser(mastodonUser)}
 
     ${ruby.install("2.6.6")}
+    exit
 
     #tune postgres w/ pgTune mb?
     ${postgres.createUser(mastodonUser)}
