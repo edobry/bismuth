@@ -73,7 +73,7 @@ console.log(sh`
 
     ${getRoot}
     ${install("curl", { assumeYes: true })}
-    ${node.install("11")}
+    ${node.install("15")}
     ${install(deps, { assumeYes: true })}
 
     ${createUser(mastodonUser, { noLogin: true })}

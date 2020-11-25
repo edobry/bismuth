@@ -74,10 +74,9 @@ util.unpack = path => sh`
     tar xvf ${path}
 `;
 
-util.addRepo = ({ host, repoPath = "", keyName, repoName }) => sh`
+util.addRepo = ({ host, repoPath = "", keyName, repoName, stableDistro = false }) => sh`
     curl -sS ${host}/${keyName} | apt-key add -
-    DISTRO="$(lsb_release -s -c)"
-    echo "deb ${host}/${repoPath} $DISTRO main" | tee /etc/apt/sources.list.d/${repoName}.list
+    echo "deb ${host}/${repoPath} ${!stableDistro ? "$(lsb_release -s -c)" : "stable"} main" > /etc/apt/sources.list.d/${repoName}.list
     apt update
 `;
 

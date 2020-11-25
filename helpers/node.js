@@ -19,7 +19,8 @@ node.install = version => sh`
     ${addRepo({
         host: "https://dl.yarnpkg.com/debian",
         keyName: "pubkey.gpg",
-        repoName: "yarn"
+        repoName: "yarn",
+        stableDistro: true
     })}
     ${install(["build-essential", "nodejs", "yarn"], { assumeYes: true })}
 `;
