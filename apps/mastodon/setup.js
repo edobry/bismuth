@@ -79,7 +79,7 @@ console.log(sh`
     ${createUser(mastodonUser, { noLogin: true })}
     ${switchUser(mastodonUser)}
 
-    ${ruby.install("2.7.2")}
+    ${ruby.install("2.6.6")}
 
     #tune postgres w/ pgTune mb?
     ${postgres.createUser(mastodonUser)}
