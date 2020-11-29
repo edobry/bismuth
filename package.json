@@ -11,6 +11,7 @@
     "bluebird": "^3.4.7",
     "cloudatcost": "^2.0.2",
     "common-tags": "^1.8.0",
+    "deepmerge": "^4.2.2",
     "ssh-config": "^1.1.3"
   }
 }

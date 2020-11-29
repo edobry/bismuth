@@ -1,4 +1,5 @@
 const
+    genConfig = require("./config")
     { sh, install, restart, start, writeConfig, getRoot, createUser, switchUser, gitClone } = require("../../helpers/util"),
     ruby = require("../../helpers/ruby"),
     node = require("../../helpers/node"),
@@ -11,14 +12,24 @@ const deps = [
     "nodejs", "gcc", "autoconf", "bison", "build-essential", "libssl-dev",
     "libyaml-dev", "libreadline6-dev", "zlib1g-dev", "libncurses5-dev",
     "libffi-dev", "libgdbm6", "libgdbm-dev", "nginx", "redis-server",
-    "redis-tools", "postgresql", "postgresql-contrib", "certbot",
+    "redis-tools", "certbot", "postgresql-client",
     "libidn11-dev", "libicu-dev", "libjemalloc-dev"];
 
 const mastodonUser = "mastodon";
 const mastoDir = "live";
 const mastoPath = `/home/${mastodonUser}/${mastoDir}`;
 
-const setupMasto = () => {
+const setupMasto = (domain, localPostgres = false) => {
+    if(localPostgres) {
+        deps.push("postgresql", "postgresql-contrib")
+    }
+
+    const config = {
+        db: {
+            host: ""
+        }
+    }
+
     return sh`
         ${switchUser(mastodonUser)}
         ${gitClone("https://github.com/tootsuite/mastodon.git", mastoPath)} && cd ${mastoPath}
@@ -30,6 +41,8 @@ const setupMasto = () => {
             -j$(getconf _NPROCESSORS_ONLN) \
             --deployment --without development test
         yarn install --pure-lockfile
+
+        ${hereWrite(".env.production", mastoPath, genConfig(domain, config))}
 
         #setup wizard; is interactive?
         RAILS_ENV=production bundle exec rake mastodon:setup
@@ -86,7 +99,7 @@ console.log(sh`
     ${postgres.createUser(mastodonUser)}
 
     #now for the actual masto setup
-    ${setupMasto()}
+    ${setupMasto(domain)}
 
-    ${setupNginx(mastoPath, "meme.garden")}
+    ${setupNginx(mastoPath, domain)}
 `);
