@@ -19,14 +19,18 @@ const mastodonUser = "mastodon";
 const mastoDir = "live";
 const mastoPath = `/home/${mastodonUser}/${mastoDir}`;
 
-const setupMasto = (domain, localPostgres = false) => {
+const setupMasto = ({ domain, localPostgres = false, dbOptions }) => {
     if(localPostgres) {
         deps.push("postgresql", "postgresql-contrib")
     }
 
     const config = {
-        db: {
-            host: ""
+        db: dbOptions,
+        mail: {
+            
+        },
+        files: {
+
         }
     }
 
@@ -52,7 +56,7 @@ const setupMasto = (domain, localPostgres = false) => {
 };
 
 const setupNginx = (mastoPath, domain) => {
-    const nginxRoot="/etc/nginx";
+    const nginxRoot = "/etc/nginx";
     const mastoConfigPath = `${nginxRoot}/sites-available/mastodon`;
 
     return sh`
@@ -81,6 +85,20 @@ const setupNginx = (mastoPath, domain) => {
     `;
 };
 
+const domain = "meme.garden";
+
+const rdsVars = {
+    endpoint: "",
+    username: "",
+    password: ""
+};
+
+const dbOptions = {
+    host: rdsVars.endpoint,
+    user: rdsVars.username,
+    pass: rdsVars.password
+}
+
 console.log(sh`
     ${harden}
 
@@ -96,10 +114,10 @@ console.log(sh`
     exit
 
     #tune postgres w/ pgTune mb?
-    ${postgres.createUser(mastodonUser)}
+    ${postgres.createUser(mastodonUser, dbOptions)}
 
     #now for the actual masto setup
-    ${setupMasto(domain)}
+    ${setupMasto({ domain, dbOptions })}
 
     ${setupNginx(mastoPath, domain)}
 `);
