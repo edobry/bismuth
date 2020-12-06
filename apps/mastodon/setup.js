@@ -1,6 +1,6 @@
 const
-    genConfig = require("./config")
-    { sh, install, restart, start, writeConfig, getRoot, createUser, switchUser, gitClone } = require("../../helpers/util"),
+    genConfig = require("./config"),
+    { sh, install, restart, start, hereWrite, getRoot, createUser, switchUser, gitClone } = require("../../helpers/util"),
     ruby = require("../../helpers/ruby"),
     node = require("../../helpers/node"),
     postgres = require("../../helpers/postgres"),

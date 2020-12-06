@@ -1,6 +1,6 @@
 const
     { sh, makeExecutable, writeConfig, install, camelToDash, fromEntries } = require("../../helpers/util"),
-    { merge } = require("deepmerge");
+    merge = require("deepmerge");
 
 module.exports = (domain, overrides = {}) => {
     const defaults = {
