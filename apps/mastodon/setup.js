@@ -4,7 +4,10 @@ const
     ruby = require("../../helpers/ruby"),
     node = require("../../helpers/node"),
     postgres = require("../../helpers/postgres"),
-    harden = require("../../helpers/harden.js");
+    harden = require("../../helpers/harden.js"),
+
+    yargs = require('yargs/yargs'),
+    { hideBin } = require('yargs/helpers');
 
 const deps = [
     "imagemagick", "ffmpeg", "libpq-dev", "libxml2-dev", "libxslt1-dev", "file",
@@ -27,7 +30,7 @@ const setupMasto = ({ domain, localPostgres = false, dbOptions }) => {
     const config = {
         db: dbOptions,
         mail: {
-            
+
         },
         files: {
 
@@ -85,39 +88,49 @@ const setupNginx = (mastoPath, domain) => {
     `;
 };
 
-const domain = "meme.garden";
+const handler = ({ domain, db }) => {
+    const dbOptions = {
+        host: db.endpoint,
+        user: db.username,
+        pass: db.password
+    };
 
-const rdsVars = {
-    endpoint: "",
-    username: "",
-    password: ""
+    console.log(sh`
+        ${harden}
+
+        ${getRoot}
+        ${install("curl", { assumeYes: true })}
+        ${node.install("15")}
+        ${install(deps, { assumeYes: true })}
+
+        ${createUser(mastodonUser, { noLogin: true })}
+        ${switchUser(mastodonUser)}
+
+        ${ruby.install("2.6.6")}
+        exit
+
+        #tune postgres w/ pgTune mb?
+        ${postgres.createUser(mastodonUser, dbOptions)}
+
+        #now for the actual masto setup
+        ${setupMasto({ domain, dbOptions })}
+
+        ${setupNginx(mastoPath, domain)}
+    `);
 };
 
-const dbOptions = {
-    host: rdsVars.endpoint,
-    user: rdsVars.username,
-    pass: rdsVars.password
-}
-
-console.log(sh`
-    ${harden}
-
-    ${getRoot}
-    ${install("curl", { assumeYes: true })}
-    ${node.install("15")}
-    ${install(deps, { assumeYes: true })}
-
-    ${createUser(mastodonUser, { noLogin: true })}
-    ${switchUser(mastodonUser)}
-
-    ${ruby.install("2.6.6")}
-    exit
-
-    #tune postgres w/ pgTune mb?
-    ${postgres.createUser(mastodonUser, dbOptions)}
-
-    #now for the actual masto setup
-    ${setupMasto({ domain, dbOptions })}
-
-    ${setupNginx(mastoPath, domain)}
-`);
+module.exports = {
+    command: "mastodon setup",
+    desc: "generates a Mastodon setup script",
+    builder: yargs => yargs
+        .option('database', {
+            alias: 'db',
+            description: "database connection parameters (username, password)",
+            required: true
+        })
+        .option('domain', {
+            required: true,
+            description: "domain name to use"
+        }),
+    handler
+};
