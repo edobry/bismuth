@@ -58,7 +58,7 @@ const multilineSubstitutions = {
             return sub;
 
         const indent = foundLeadingSpaces[0];
-        const subLines = sub.toString().split("\n");
+        const subLines = (sub || "").toString().split("\n");
 
         return [
             subLines[0],
