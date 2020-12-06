@@ -95,8 +95,8 @@ module.exports = (domain, overrides = {}) => {
         # -------
         # Make sure to use `rake secret` to generate secrets
         # -------
-        SECRET_KEY_BASE=${secret.key_base}
-        OTP_SECRET=${secret.otp_secret}
+        SECRET_KEY_BASE=${secrets.key_base}
+        OTP_SECRET=${secrets.otp_secret}
 
         # Web Push
         # --------
