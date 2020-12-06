@@ -93,14 +93,14 @@ module.exports = (domain, overrides = {}) => {
 
         # Secrets
         # -------
-        # Make sure to use `rake secret` to generate secrets
+        # Make sure to use \`rake secret\` to generate secrets
         # -------
         SECRET_KEY_BASE=${secrets.key_base}
         OTP_SECRET=${secrets.otp_secret}
 
         # Web Push
         # --------
-        # Generate with `rake mastodon:webpush:generate_vapid_key`
+        # Generate with \`rake mastodon:webpush:generate_vapid_key\`
         # --------
         VAPID_PRIVATE_KEY=${push.private_key}
         VAPID_PUBLIC_KEY=${push.public_key}
