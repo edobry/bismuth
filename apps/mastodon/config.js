@@ -15,16 +15,16 @@ module.exports = (domain, overrides = {}) => {
             host: "localhost",
             port: 6379
         },
-        db: {
-            host: "/var/run/postgresql",
-            user: "mastodon",
+        database: {
+            endpoint: "/var/run/postgresql",
+            username: "mastodon",
             name: "mastodon_production",
-            pass: "",
+            password: "",
             port: 5432,
             pool: 100
         },
         search: {
-            enabled: true,
+            enabled: false,
             host: "localhost",
             port: 9200
         },
@@ -41,13 +41,13 @@ module.exports = (domain, overrides = {}) => {
             port: 587,
             login: "",
             password: "",
-            from_address: `notifications${domain}`
+            from_address: `notifications@${domain}`
         },
         file: {
             enabled: true,
             bucket: `files.${domain}`,
-            awsAccessKeyId: "",
-            awsSecretAccessKey: "",
+            accessKeyId: "",
+            secretAccessKey: "",
             aliasHost: `files.${domain}`,
             protocol: "",
             hostname: "",
@@ -55,7 +55,7 @@ module.exports = (domain, overrides = {}) => {
         }
     };
 
-    const { federation, redis, db, search, secrets, push, mail, file }
+    const { federation, redis, database, search, secrets, push, mail, file }
         = merge(defaults, overrides);
 
     return sh`
@@ -78,12 +78,12 @@ module.exports = (domain, overrides = {}) => {
 
         # PostgreSQL
         # ----------
-        DB_HOST=${db.host}
-        DB_USER=${db.user}
-        DB_NAME=$${db.name}
-        DB_PASS=${db.pass}
-        DB_PORT=${db.port}
-        DB_POOL=${db.pool}
+        DB_HOST=${database.endpoint}
+        DB_USER=${database.username}
+        DB_NAME=${database.name}
+        DB_PASS=${database.password}
+        DB_PORT=${database.port}
+        DB_POOL=${database.pool}
 
         # ElasticSearch (optional)
         # ------------------------
@@ -118,8 +118,8 @@ module.exports = (domain, overrides = {}) => {
         S3_ENABLED=${file.enabled}
         S3_ALIAS_HOST=${file.aliasHost}
         S3_BUCKET=${file.bucket}
-        AWS_ACCESS_KEY_ID=${file.awsAccessKeyId}
-        AWS_SECRET_ACCESS_KEY=${file.awsSecretAccessKey}
+        AWS_ACCESS_KEY_ID=${file.accessKeyId}
+        AWS_SECRET_ACCESS_KEY=${file.secretAccessKey}
         S3_REGION=${file.region}
         S3_PROTOCOL=${file.protocol}
         S3_HOSTNAME=${file.hostname}

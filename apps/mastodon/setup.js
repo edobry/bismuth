@@ -22,19 +22,11 @@ const mastodonUser = "mastodon";
 const mastoDir = "live";
 const mastoPath = `/home/${mastodonUser}/${mastoDir}`;
 
-const setupMasto = ({ domain, localPostgres = false, dbOptions }) => {
-    if(localPostgres) {
+const setupMasto = args => {
+    const { domain, database, mail, file } = args;
+
+    if(database.local) {
         deps.push("postgresql", "postgresql-contrib")
-    }
-
-    const config = {
-        db: dbOptions,
-        mail: {
-
-        },
-        files: {
-
-        }
     }
 
     return sh`
@@ -49,7 +41,7 @@ const setupMasto = ({ domain, localPostgres = false, dbOptions }) => {
             --deployment --without development test
         yarn install --pure-lockfile
 
-        ${hereWrite(".env.production", mastoPath, genConfig(domain, config))}
+        ${hereWrite(".env.production", mastoPath, genConfig(domain, args))}
 
         #setup wizard; is interactive?
         RAILS_ENV=production bundle exec rake mastodon:setup
@@ -88,7 +80,9 @@ const setupNginx = (mastoPath, domain) => {
     `;
 };
 
-const handler = ({ domain, db }) => {
+const handler = args => {
+    const { domain, db } = args;
+
     const dbOptions = {
         host: db.endpoint,
         user: db.username,
@@ -113,7 +107,7 @@ const handler = ({ domain, db }) => {
         ${postgres.createUser(mastodonUser, dbOptions)}
 
         #now for the actual masto setup
-        ${setupMasto({ domain, dbOptions })}
+        ${setupMasto(args)}
 
         ${setupNginx(mastoPath, domain)}
     `);
@@ -123,14 +117,47 @@ module.exports = {
     command: "mastodon setup",
     desc: "generates a Mastodon setup script",
     builder: yargs => yargs
-        .option('database', {
-            alias: 'db',
-            description: "database connection parameters (username, password)",
-            required: true
-        })
         .option('domain', {
             required: true,
             description: "domain name to use"
-        }),
+        })
+        .option('database.endpoint', {
+            alias: 'db.endpoint',
+            description: "database to use [connection endpoint]",
+            // required: true
+        })
+        .option('database.username', {
+            alias: 'db.username',
+            description: "database to use [username]",
+            // required: true
+        })
+        .option('database.password', {
+            alias: 'db.password',
+            description: "database to use [password]",
+            // required: true
+        })
+        .option('file.enabled', {
+            description: "whether to use an object storage provider",
+            implies: ["file.accessKey", "file.secretKey"]
+        })
+        .option('file.accessKey', {
+            description: "object storage provider [access key ID]"
+        })
+        .option('file.secretKey', {
+            description: "object storage provider [secret access key]"
+        })
+        .option('mail.server', {
+            // required: true,
+            description: "email sending provider to use"
+        })
+        .option('mail.login', {
+            // required: true,
+            description: "email sending provider to use"
+        })
+        .option('mail.password', {
+            // required: true,
+            description: "email sending provider to use"
+        })
+        .wrap(yargs.terminalWidth()),
     handler
 };
